@@ -2,3 +2,9 @@
 Task for tumelo
 
 ./venv/scripts/activate
+
+Assumptions:
+isin regex is "^[A-Z]{2}[A-Z0-9]{10}$"
+
+Run unit tests:
+python -m unittest tests.main.test_load_ballots
