@@ -5,13 +5,14 @@ from helpers.types import Ballot, Holding, Error, EntitlementRequest, Entitlemen
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 from datetime import date, datetime
 
-async def get_holdings(
+async def post_entitlements(
         client: httpx.AsyncClient,
+        base_url: str,
         entitelement_request: EntitlementRequest,
         api_key: str
 ) -> Entitlement | Error:
     response = await client.post(
-        f"/entitlements",
+        f"{base_url}/entitlements",
         headers={
             "api_key": api_key
         },
@@ -25,7 +26,7 @@ async def get_holdings(
             return Error(
                 code="500",
                 message="Invalid success returned",
-                details=e
+                details=str(e)
             )
     try:
         return Error.model_validate(response.json())
@@ -33,7 +34,7 @@ async def get_holdings(
             return Error(
                 code="500",
                 message="Invalid failure returned",
-                details=e
+                details=str(e)
             )
 
     

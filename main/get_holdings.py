@@ -7,13 +7,14 @@ from datetime import date, datetime
 
 async def get_holdings(
         client: httpx.AsyncClient,
+        base_url: str,
         ballot: Ballot,
         investor_id: str,
         as_of_date: date,
         api_key: str
 ) -> Holding | Error:
     response = await client.get(
-        f"/holdings",
+        f"{base_url}/holdings",
         headers={
             "api_key": api_key
         },
@@ -31,7 +32,7 @@ async def get_holdings(
             return Error(
                 code="500",
                 message="Invalid success returned",
-                details=e
+                details=str(e)
             )
     try:
         return Error.model_validate(response.json())
@@ -39,7 +40,7 @@ async def get_holdings(
             return Error(
                 code="500",
                 message="Invalid failure returned",
-                details=e
+                details=str(e)
             )
 
     

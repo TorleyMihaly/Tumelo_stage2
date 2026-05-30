@@ -6,11 +6,12 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 
 async def get_investors(
         client: httpx.AsyncClient,
+        base_url: str,
         ballot: Ballot,
         api_key: str
 ) -> Investor | Error:
     response = await client.get(
-        f"/custody-accounts/{ballot.custody_account_id}/investors",
+        f"{base_url}/custody-accounts/{ballot.custody_account_id}/investors",
         headers={
             "api_key": api_key
         }
@@ -23,7 +24,7 @@ async def get_investors(
             return Error(
                 code="500",
                 message="Invalid success returned",
-                details=e
+                details=str(e)
             )
     try:
         return Error.model_validate(response.json())
@@ -31,7 +32,7 @@ async def get_investors(
             return Error(
                 code="500",
                 message="Invalid failure returned",
-                details=e
+                details=str(e)
             )
 
     
