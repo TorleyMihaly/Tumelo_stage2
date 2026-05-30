@@ -16,8 +16,8 @@ class TestLoadBallots(unittest.TestCase):
         )]
         self.assertEqual(lsit_of_balllots.valid, happy_ballot)
 
-    def test_mix(self):
-        lsit_of_balllots = load_ballots("tests/data/mixed_ballots.json")
+    def test_mix_submissionD_fail(self):
+        lsit_of_balllots = load_ballots("tests/data/mixed_ballots_submissionD_fail.json")
         mixed_ballot = [
             Ballot(
                 meetingId="meeting-001",

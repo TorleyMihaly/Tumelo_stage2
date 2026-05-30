@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -41,12 +41,13 @@ class Ballot(BaseModel):
     )
     # gt=0 means it has to be greater than 0
 
-    @field_validator("isin", mode="before")
-    @classmethod
-    def normalise_isin(cls, value: object) -> object:
-        if isinstance(value, str):
-            return value.strip().upper()
-        return value
+    #commented out for strict validation
+    # @field_validator("isin", mode="before")
+    # @classmethod
+    # def normalise_isin(cls, value: object) -> object:
+    #     if isinstance(value, str):
+    #         return value.strip().upper()
+    #     return value
 
 @dataclass(frozen=True)
 class InvalidBallot:
@@ -58,5 +59,150 @@ class InvalidBallot:
 class BallotLoadResult:
     valid: list[Ballot]
     invalid: list[InvalidBallot]
+
+class Investor(BaseModel):
+    model_config = ConfigDict(
+        extra="ignore",
+        validate_by_name=True,
+        validate_by_alias=True
+    )
+
+    investor_id: str = Field(
+        alias="investorId",
+        min_length=1,
+        strict=True
+    )
+
+    name: str = Field(
+        alias="name",
+        min_length=1,
+        strict=True
+    )
+
+class Holding(BaseModel):
+    model_config = ConfigDict(
+        extra="ignore",
+        validate_by_name=True,
+        validate_by_alias=True
+    )
+
+    investor_id: str = Field(
+        alias="investorId",
+        min_length=1,
+        strict=True
+    )
+
+    isin: str = Field(
+        alias="isin",
+        pattern=r"^[A-Z]{2}[A-Z0-9]{10}$",
+        strict=True
+    )
+
+    quantity: float = Field(
+        alias="quantity",
+        gt=0,
+        strict=True
+    )
+
+    as_of_date: date = Field(
+        alias="asOfDate"
+    )
+
+class EntitlementRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="ignore",
+        validate_by_name=True,
+        validate_by_alias=True
+    )
+
+    meeting_id: str = Field(
+        alias="meetingId",
+        min_length=1,
+        strict=True
+    )
+
+    investor_id: str = Field(
+        alias="investorId",
+        min_length=1,
+        strict=True
+    )
+
+    isin: str = Field(
+        alias="isin",
+        pattern=r"^[A-Z]{2}[A-Z0-9]{10}$",
+        strict=True
+    )
+
+    quantity: float = Field(
+        alias="quantity",
+        gt=0,
+        strict=True
+    )
+
+class Entitlement(BaseModel):
+    model_config = ConfigDict(
+        extra="ignore",
+        validate_by_name=True,
+        validate_by_alias=True
+    )
+
+    entitlement_id: str = Field(
+        alias="entitlementId",
+        min_length=1,
+        strict=True
+    )
+
+    meeting_id: str = Field(
+        alias="meetingId",
+        min_length=1,
+        strict=True
+    )
+
+    investor_id: str = Field(
+        alias="investorId",
+        min_length=1,
+        strict=True
+    )
+
+    isin: str = Field(
+        alias="isin",
+        pattern=r"^[A-Z]{2}[A-Z0-9]{10}$",
+        strict=True
+    )
+
+    quantity: float = Field(
+        alias="quantity",
+        gt=0,
+        strict=True
+    )
+
+    created_at: datetime = Field(
+        alias="createdAt"
+    )
+
+class Error(BaseModel):
+    model_config = ConfigDict(
+        extra="ignore",
+        validate_by_name=True,
+        validate_by_alias=True
+    )
+
+    code: str = Field(
+        alias="code",
+        min_length=1,
+        strict=True
+    )
+
+    message: str = Field(
+        alias="message",
+        min_length=1,
+        strict=True
+    )
+
+    details: str | None = Field(
+        alias="details",
+        default=None,
+        strict=True
+    )
 
 

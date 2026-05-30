@@ -1,0 +1,130 @@
+{
+  "ballots": [
+    {
+      "meetingId": "meeting-001",
+      "custodyAccountId": "custody-abc",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": 1000000
+    },
+    {
+      "meetingId": "meeting-002",
+      "custodyAccountId": "custody-def",
+      "isin": "US00SAMPLE02",
+      "submissionDeadline": "2026-03-20",
+      "sharesInIssue": 5000000
+    },
+    {
+      "meetingId": "meeting-003",
+      "custodyAccountId": "custody-xyz",
+      "isin": "DE00DEMO0003",
+      "submissionDeadline": "2026-04-10",
+      "sharesInIssue": 2500000
+    },
+    {
+      "meetingId": "meeting-004",
+      "custodyAccountId": "custody-abc",
+      "isin": "FR00MOCK0004",
+      "submissionDeadline": "2026-02-28",
+      "sharesInIssue": 3000000
+    },
+    {
+      "meetingId": "meeting-005",
+      "custodyAccountId": "custody-def",
+      "isin": "NL00FAKE0005",
+      "submissionDeadline": "2026-05-12",
+      "sharesInIssue": 1500000
+    },
+    {
+      "meetingId": "",
+      "custodyAccountId": "custody-abc",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": 1000000
+    },
+    {
+      "meetingId": "meeting-invalid-isin",
+      "custodyAccountId": "custody-abc",
+      "isin": "INVALID",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": 1000000
+    },
+    {
+      "meetingId": "meeting-short-isin",
+      "custodyAccountId": "custody-def",
+      "isin": "US00SAM",
+      "submissionDeadline": "2026-03-20",
+      "sharesInIssue": 5000000
+    },
+    {
+      "meetingId": "meeting-invalid-date",
+      "custodyAccountId": "custody-def",
+      "isin": "US00SAMPLE02",
+      "submissionDeadline": "2026-13-45",
+      "sharesInIssue": 5000000
+    },
+    {
+      "meetingId": "meeting-alt-date-format",
+      "custodyAccountId": "custody-abc",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "15/02/2026",
+      "sharesInIssue": 1000000
+    },
+    {
+      "meetingId": "meeting-missing-custody",
+      "custodyAccountId": "",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": 1000000
+    },
+    {
+      "meetingId": "meeting-unknown-custody",
+      "custodyAccountId": "custody-unknown",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": 1000000
+    },
+    {
+      "meetingId": "meeting-empty-custody",
+      "custodyAccountId": "custody-empty",
+      "isin": "IT00DUMMY006",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": 800000
+    },
+    {
+      "meetingId": "meeting-zero-shares",
+      "custodyAccountId": "custody-abc",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": 0
+    },
+    {
+      "meetingId": "meeting-negative-shares",
+      "custodyAccountId": "custody-abc",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": -1000
+    },
+    {
+      "meetingId": "meeting-null-deadline",
+      "custodyAccountId": "custody-abc",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": null,
+      "sharesInIssue": 1000000
+    },
+    {
+      "meetingId": "meeting-duplicate-001",
+      "custodyAccountId": "custody-abc",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": 1000000
+    },
+    {
+      "meetingId": "meeting-duplicate-001",
+      "custodyAccountId": "custody-def",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": 1000000
+    }
+  ]
+}

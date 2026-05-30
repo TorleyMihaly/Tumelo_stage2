@@ -3,6 +3,10 @@ Task for tumelo
 
 ./venv/scripts/activate
 
+installed:
+httpx
+pydantic
+
 Assumptions:
 isin regex is "^[A-Z]{2}[A-Z0-9]{10}$"
 
