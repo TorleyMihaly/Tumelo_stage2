@@ -60,6 +60,13 @@ class BallotLoadResult:
     valid: list[Ballot]
     invalid: list[InvalidBallot]
 
+@dataclass(frozen=True)
+class BallotProcessingResult:
+    meeting_id: str
+    success: bool
+    submission_id: str | None = None
+    error: str | None = None
+
 class Investor(BaseModel):
     model_config = ConfigDict(
         extra="ignore",
