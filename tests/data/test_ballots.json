@@ -1,0 +1,25 @@
+{
+  "ballots": [
+    {
+      "meetingId": "meeting-001",
+      "custodyAccountId": "custody-abc",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": 1000000
+    },
+    {
+      "meetingId": "meeting-negative-shares",
+      "custodyAccountId": "custody-abc",
+      "isin": "GB00TEST0001",
+      "submissionDeadline": "2026-02-15",
+      "sharesInIssue": -1000
+    },
+    {
+      "meetingId": "meeting-invalid-date",
+      "custodyAccountId": "custody-def",
+      "isin": "US00SAMPLE02",
+      "submissionDeadline": "2026-13-45",
+      "sharesInIssue": 5000000
+    }
+  ]
+}
