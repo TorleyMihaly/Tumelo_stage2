@@ -1,6 +1,6 @@
 from datetime import date
 import httpx
-from helpers.types import BallotProcessingResult, Ballot, Investor, Error, Holding, EntitlementRequest, Entitlement
+from helpers.types import BallotProcessingResult, Ballot, Investor, Error, Holding, EntitlementRequest, Entitlement, InvestorList
 from main.get_holdings import get_holdings
 from main.get_investors import get_investors
 from main.post_entitlements import post_entitlements
@@ -24,12 +24,14 @@ async def process_ballot(
                 )
 
     try:
-        investor: Investor | Error = await get_investors(
+        investor: InvestorList | Error = await get_investors(
             client=client,
             base_url=base_url,
             ballot=ballot,
             api_key=api_key
         )
+        
+
 
         error_check: None | BallotProcessingResult = error_handler(response=investor)
         if error_check.isinstance(BallotProcessingResult):

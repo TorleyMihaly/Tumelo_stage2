@@ -21,7 +21,13 @@ async def process_all_ballots(
     #Limit concurrent ballots running, would be useful to not overload APIs
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_BALLOTS)
 
-    async with httpx.AsyncClient(timeout=30) as client:
+    async with httpx.AsyncClient(
+        base_url=API_BASE_URL,
+        headers={
+            "api_key": api_key
+        },
+        timeout=30
+    ) as client:
 
         async def process_with_limit(ballot: Ballot) -> BallotProcessingResult:
             # Safely does all the acquire and release bits

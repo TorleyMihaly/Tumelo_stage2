@@ -5,7 +5,7 @@ from helpers.types import Ballot, BallotLoadResult
 class TestLoadBallots(unittest.TestCase):
     maxDiff = None
 
-    def test_happy(self):
+    def test_load_ballots_happy(self):
         lsit_of_balllots = load_ballots("tests/data/happy_ballots.json")
         happy_ballot =[ Ballot(
             meetingId="meeting-001",
@@ -16,7 +16,7 @@ class TestLoadBallots(unittest.TestCase):
         )]
         self.assertEqual(lsit_of_balllots.valid, happy_ballot)
 
-    def test_mix_submissionD_fail(self):
+    def test_load_ballots_mix_submissionD_fail(self):
         lsit_of_balllots = load_ballots("tests/data/mixed_ballots_submissionD_fail.json")
         mixed_ballot = [
             Ballot(

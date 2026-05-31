@@ -14,10 +14,7 @@ async def get_holdings(
         api_key: str
 ) -> Holding | Error:
     response = await client.get(
-        f"{base_url}/holdings",
-        headers={
-            "api_key": api_key
-        },
+        "/holdings",
         params={
             "investorId": investor_id,
             "isin": ballot.isin,

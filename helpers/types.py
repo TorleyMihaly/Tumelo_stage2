@@ -213,3 +213,17 @@ class BallotProcessingResult:
     success: bool
     entitlement: Entitlement | None = None
     error: Error | None = None
+
+class InvestorList(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_by_name=True,
+        validate_by_alias=True,
+        str_strip_whitespace=True,
+    )
+
+    Investors: list[Investor] = Field(
+        alias="investors",
+        min_length=1,
+        strict=True
+    )

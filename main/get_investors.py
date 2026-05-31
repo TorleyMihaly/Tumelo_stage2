@@ -1,7 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 import httpx
-from helpers.types import Ballot, Investor, Error
+from helpers.types import Ballot, Investor, Error, InvestorList
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 async def get_investors(
@@ -9,17 +9,19 @@ async def get_investors(
         base_url: str,
         ballot: Ballot,
         api_key: str
-) -> Investor | Error:
+) -> list[Investor] | Error:
     response = await client.get(
-        f"{base_url}/custody-accounts/{ballot.custody_account_id}/investors",
-        headers={
-            "api_key": api_key
-        }
+        f"/custody-accounts/{ballot.custody_account_id}/investors",
     )
+
+    investor_list: list[Investor] = []
 
     if response.is_success:
         try:
-            return Investor.model_validate(response.json())
+            InvestorList.model_validate(response.json())                 
+            for investor in response.json()["investors"]:
+                investor_list.append(Investor.model_validate(investor))
+            return investor_list
         except ValidationError as e:
             return Error(
                 code="500",

@@ -12,10 +12,7 @@ async def post_entitlements(
         api_key: str
 ) -> Entitlement | Error:
     response = await client.post(
-        f"{base_url}/entitlements",
-        headers={
-            "api_key": api_key
-        },
+        "/entitlements",
         json=entitelement_request.model_dump(by_alias=True, mode="json")
     )
 
