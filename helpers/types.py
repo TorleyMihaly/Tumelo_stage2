@@ -227,3 +227,8 @@ class InvestorList(BaseModel):
         min_length=1,
         strict=True
     )
+
+@dataclass(frozen=True)
+class BallotProcessingResultLists:
+    ballots_failed: list[BallotProcessingResult]
+    ballots_succeeded: list[BallotProcessingResult]

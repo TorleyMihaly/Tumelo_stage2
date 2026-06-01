@@ -8,11 +8,13 @@ async def get_investors(
         client: httpx.AsyncClient,
         base_url: str,
         ballot: Ballot,
-        api_key: str
+        api_key: str,
+        api_semaphore: asyncio.Semaphore
 ) -> list[Investor] | Error:
-    response = await client.get(
-        f"/custody-accounts/{ballot.custody_account_id}/investors",
-    )
+    async with api_semaphore:
+        response = await client.get(
+            f"/custody-accounts/{ballot.custody_account_id}/investors",
+        )
 
     investor_list: list[Investor] = []
 

@@ -1,5 +1,5 @@
 import datetime
-from helpers.types import Ballot, InvalidBallot, BallotLoadResult, BallotProcessingResult
+from helpers.types import Ballot, InvalidBallot, BallotLoadResult, BallotProcessingResult, BallotProcessingResultLists
 from main.handle_ballot_loader import handle_ballot_loader
 from main.process_ballot import process_ballot
 import httpx
@@ -9,35 +9,43 @@ import asyncio
 json_file_path = "data/ballot_data.json"
 #Would be stored in AWS secrets manager or another secure storage solution
 api_key = "fake_key"
-MAX_CONCURRENT_BALLOTS = 10
+MAX_CONCURRENT_BALLOTS = 5
+MAX_CONCURRENT_API_CALLS = 20
 API_BASE_URL = "https://api.tumelo.com"
 as_of_date = datetime.today()
     
 
 
 async def process_all_ballots(
-        ballots: list[Ballot]
-) -> list[BallotProcessingResult]:
+        ballots: list[Ballot],
+        api_key: str
+) -> list[BallotProcessingResultLists]:
     #Limit concurrent ballots running, would be useful to not overload APIs
-    semaphore = asyncio.Semaphore(MAX_CONCURRENT_BALLOTS)
+    ballot_semaphore = asyncio.Semaphore(MAX_CONCURRENT_BALLOTS)
+    api_semaphore = asyncio.Semaphore(MAX_CONCURRENT_API_CALLS)
 
     async with httpx.AsyncClient(
         base_url=API_BASE_URL,
         headers={
             "api_key": api_key
         },
-        timeout=30
+        timeout=30,
+        limits=httpx.Limits(
+            max_connections=MAX_CONCURRENT_API_CALLS,
+            max_keepalive_connections=MAX_CONCURRENT_API_CALLS
+        )
     ) as client:
 
-        async def process_with_limit(ballot: Ballot) -> BallotProcessingResult:
+        async def process_with_limit(ballot: Ballot) -> BallotProcessingResultLists:
             # Safely does all the acquire and release bits
-            async with semaphore:
+            async with ballot_semaphore:
                 return await process_ballot(
                     client=client,
                     ballot=ballot,
                     base_url=API_BASE_URL,
                     api_key=api_key,
-                    as_of_date=as_of_date
+                    as_of_date=as_of_date,
+                    api_semaphore=api_semaphore
                 )
         
         results = await asyncio.gather(
@@ -51,12 +59,14 @@ async def main() -> None:
     if ballots.isinstance(list[InvalidBallot]):
         raise SystemExit(0)
     
-    results = await process_all_ballots(ballots=ballots.valid)
+    results = await process_all_ballots(ballots=ballots.valid, api_key=api_key)
 
     for result in results:
-        if result.success:
+        ballot_fails = result.ballots_failed
+        ballot_successes = result.ballots_succeeded
+        for result in ballot_successes:
             print(f"{result.meeting_id}: submitted, has entitlrent_id: {result.entitlement.entitlement_id}")
-        else:
+        for result in ballot_fails:
             print(f"{result.meeting_id}: failed, with error: {result.error.code}, {result.error.message}")
 
 

@@ -9,12 +9,14 @@ async def post_entitlements(
         client: httpx.AsyncClient,
         base_url: str,
         entitelement_request: EntitlementRequest,
-        api_key: str
+        api_key: str,
+        api_semaphore: asyncio.Semaphore
 ) -> Entitlement | Error:
-    response = await client.post(
-        "/entitlements",
-        json=entitelement_request.model_dump(by_alias=True, mode="json")
-    )
+    async with api_semaphore:
+        response = await client.post(
+            "/entitlements",
+            json=entitelement_request.model_dump(by_alias=True, mode="json")
+        )
 
     if response.is_success:
         try:

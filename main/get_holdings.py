@@ -11,16 +11,18 @@ async def get_holdings(
         ballot: Ballot,
         investor_id: str,
         as_of_date: date,
-        api_key: str
+        api_key: str,
+        api_semaphore: asyncio.Semaphore
 ) -> Holding | Error:
-    response = await client.get(
-        "/holdings",
-        params={
-            "investorId": investor_id,
-            "isin": ballot.isin,
-            "asOfDate": as_of_date.isoformat()
-        }
-    )
+    async with api_semaphore:
+        response = await client.get(
+            "/holdings",
+            params={
+                "investorId": investor_id,
+                "isin": ballot.isin,
+                "asOfDate": as_of_date.isoformat()
+            }
+        )
 
     if response.is_success:
         try:
