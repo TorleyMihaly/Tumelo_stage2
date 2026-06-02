@@ -1,6 +1,6 @@
 import asyncio
 from main.get_investors import get_investors
-from helpers.types import Ballot, Investor, Error
+from helpers.types import Ballot, Investor, Error, InvestorList
 import unittest
 import httpx
 
@@ -68,9 +68,9 @@ class TestGetInvestors(unittest.IsolatedAsyncioTestCase):
                 api_semaphore=api_semaphore
             )
 
-        self.assertIsInstance(result, list)
-        self.assertTrue(all(isinstance(item, Investor) for item in result))
-        for investor in result:
+        self.assertIsInstance(result, InvestorList)
+        self.assertTrue(all(isinstance(item, Investor) for item in result.investors))
+        for investor in result.investors:
             self.assertEqual(investor.investor_id, mock_investor_id)
             self.assertEqual(investor.name, mock_investor_name)
 

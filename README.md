@@ -1,6 +1,8 @@
 # Tumelo_stage2
 Task for tumelo
 
+
+
 ./venv/scripts/activate
 
 installed:
@@ -18,3 +20,7 @@ Run unit tests:
 python -m unittest tests.main.test_load_ballots
 python -m unittest tests.main.test_get_investor
 python -m unittest tests.main.test_post_entitlements
+python -m unittest tests.main.test_process_ballot
+
+Run (basically)End to end test:
+python -m unittest tests.main.e_to_e

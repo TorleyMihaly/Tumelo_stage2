@@ -13,7 +13,7 @@ api_key = "fake_key"
 MAX_CONCURRENT_BALLOTS = 5
 MAX_CONCURRENT_API_CALLS = 20
 API_BASE_URL = "https://api.tumelo.com"
-as_of_date = datetime.today()
+as_of_date = datetime.date.today()
     
 def configure_logging() -> None:
     logging.basicConfig(
@@ -21,42 +21,62 @@ def configure_logging() -> None:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     )
 
-async def process_all_ballots(
+logger = logging.getLogger(__name__)
+
+async def process_all_ballots_with_client(
         ballots: list[Ballot],
-        api_key: str
+        client: httpx.AsyncClient,
+        as_of_date: datetime.date,
+        max_connections: int,
+        max_keepalive_connections: int
 ) -> list[BallotProcessingResultLists]:
     #Limit concurrent ballots running, would be useful to not overload APIs
-    ballot_semaphore = asyncio.Semaphore(MAX_CONCURRENT_BALLOTS)
-    api_semaphore = asyncio.Semaphore(MAX_CONCURRENT_API_CALLS)
+    ballot_semaphore = asyncio.Semaphore(max_connections)
+    api_semaphore = asyncio.Semaphore(max_keepalive_connections)
 
-    async with httpx.AsyncClient(
-        base_url=API_BASE_URL,
-        headers={
-            "api_key": api_key
-        },
-        timeout=30,
-        limits=httpx.Limits(
-            max_connections=MAX_CONCURRENT_API_CALLS,
-            max_keepalive_connections=MAX_CONCURRENT_API_CALLS
-        )
-    ) as client:
-
-        async def process_with_limit(ballot: Ballot) -> BallotProcessingResultLists:
+    async def process_with_limit(ballot: Ballot) -> BallotProcessingResultLists:
             # Safely does all the acquire and release bits
             async with ballot_semaphore:
                 return await process_ballot(
                     client=client,
                     ballot=ballot,
-                    base_url=API_BASE_URL,
-                    api_key=api_key,
                     as_of_date=as_of_date,
                     api_semaphore=api_semaphore
                 )
-        
-        results = await asyncio.gather(
+            
+    results = await asyncio.gather(
             *(process_with_limit(ballot) for ballot in ballots)
         )
     return list(results)
+            
+    
+
+async def process_all_ballots(
+        ballots: list[Ballot],
+        api_key: str,
+        as_of_date: datetime.date,
+        base_url: str,
+        max_connections: int,
+        max_keepalive_connections: int
+) -> list[BallotProcessingResultLists]:
+    async with httpx.AsyncClient(
+        base_url=base_url,
+        headers={
+            "api_key": api_key
+        },
+        timeout=30,
+        limits=httpx.Limits(
+            max_connections=max_connections,
+            max_keepalive_connections=max_keepalive_connections
+        )
+    ) as client:
+            return await process_all_ballots_with_client(
+                ballots=ballots,
+                client=client,
+                as_of_date=as_of_date,
+                max_connections=max_connections,
+                max_keepalive_connections=max_keepalive_connections
+            )
 
 async def main() -> None:
     configure_logging()
@@ -65,10 +85,17 @@ async def main() -> None:
 
     ballots = handle_ballot_loader(json_file_path)
 
-    if ballots.isinstance(list[InvalidBallot]):
+    if isinstance(ballots, list[InvalidBallot]):
         raise SystemExit(0)
     
-    results = await process_all_ballots(ballots=ballots.valid, api_key=api_key)
+    results = await process_all_ballots(
+        ballots=ballots.valid, 
+        api_key=api_key,
+        as_of_date=as_of_date,
+        base_url=API_BASE_URL,
+        max_connections=MAX_CONCURRENT_BALLOTS,
+        max_keepalive_connections=MAX_CONCURRENT_API_CALLS
+    )
 
     for result in results:
         ballot_fails = result.ballots_failed
@@ -76,7 +103,7 @@ async def main() -> None:
         for result in ballot_successes:
             logger.info("%s: submitted, has entitlement_id: %s", result.meeting_id, result.entitlement.entitlement_id)
         for result in ballot_fails:
-            logger.error("%s: failed, with error:  %s, %s", result.meeting_id, result.error.code, result.error.message)
+            logger.warning("%s: failed, with error:  %s, %s", result.meeting_id, result.error.code, result.error.message)
 
 
 if __name__ == "__main__":

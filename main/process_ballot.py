@@ -19,7 +19,6 @@ async def process_ballot(
 ) -> BallotProcessingResultLists:
     
     
-    
     list_of_ballot_processing_results_fail = []
     list_of_ballot_processing_results_success = []
     
@@ -34,6 +33,8 @@ async def process_ballot(
             return None
 
     try:
+
+        logger.info("Getting investors for custody account id: %s", ballot.custody_account_id)
         investors: InvestorList | Error = await get_investors(
             client=client,
             ballot=ballot,
@@ -41,12 +42,13 @@ async def process_ballot(
         )
 
 
+
         error_check: None | BallotProcessingResult = error_handler(response=investors)
         if isinstance(error_check, BallotProcessingResult): 
             return error_check
         
-
         for investor in investors.investors:
+            logger.info("Getting holdings for investor id: %s", investor.investor_id)
             holding: Holding | Error = await get_holdings(
                 client=client,
                 ballot=ballot,
@@ -61,7 +63,6 @@ async def process_ballot(
                 list_of_ballot_processing_results_fail.append(error_check)
                 continue
 
-            
             entitlement_request = EntitlementRequest(
                 meetingId=ballot.meeting_id,
                 investorId=investor.investor_id,
@@ -69,14 +70,13 @@ async def process_ballot(
                 quantity=holding.quantity
             )
 
-
+            logger.info("Posting entitlements for investor id: %s", entitlement_request.investor_id)
             entitlement: Entitlement | Error = await post_entitlements(
                 client=client,
                 entitelement_request=entitlement_request,
                 api_semaphore=api_semaphore
             )
 
-            
             error_check: None | BallotProcessingResult = error_handler(response=entitlement)
             if isinstance(error_check, BallotProcessingResult):
                 list_of_ballot_processing_results_fail.append(error_check)
@@ -89,6 +89,7 @@ async def process_ballot(
                 entitlement=entitlement
             )
 
+            logger.info("Adding succesful result to list: %s", entitlement.investor_id)
             list_of_ballot_processing_results_success.append(succesful_result)
 
 
@@ -100,7 +101,7 @@ async def process_ballot(
 
 
     except Exception as e:
-        logger.warning("error: %s", e)
+        logger.warning("error: %s", e.with_traceback())
         ballot_processing_results_fail =  BallotProcessingResult(
              meeting_id=ballot.meeting_id,
              success=False,
