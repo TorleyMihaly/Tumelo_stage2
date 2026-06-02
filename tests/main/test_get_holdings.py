@@ -1,5 +1,7 @@
-from main.get_investors import get_investors
-from helpers.types import Ballot, Investor, Error
+import asyncio
+from datetime import date
+from main.get_holdings import get_holdings
+from helpers.types import Ballot, Holding, Investor, Error
 import unittest
 import httpx
 
@@ -7,15 +9,25 @@ mock_base_url = "https://mock.com"
 mock_custody_account_id: str = "mock_acc_id"
 mock_api_key = "mock_key"
 mock_investor_id = "mock_investor_id"
-mock_investor_name = "mock_investor_name"
 mock_meeting_id = "mock_meeting_id"
 mock_isin = "GB00TEST0001"
 mock_submission_deadline = "2026-02-15"
 mock_shares_in_issue = 1000
 mock_invalid_request_error_code = "400"
-mock_invalid_request_error_message = "Invalid custody account ID format"
+mock_invalid_request_error_message = "Invalid request parameters"
 mock_malformed_error_code = "500"
 mock_malformed_error_message = "Invalid success returned"
+api_semaphore = asyncio.Semaphore(1)
+ballot = Ballot(
+            meetingId=mock_meeting_id,
+            custodyAccountId=mock_custody_account_id,
+            isin=mock_isin,
+            submissionDeadline=mock_submission_deadline,
+            sharesInIssue=mock_shares_in_issue
+        )
+investor_id="mock_investor_id"
+mock_as_of_date=date(2026,2,15)
+mock_quantity=1500
 
 class TestGetHoldings(unittest.IsolatedAsyncioTestCase):
     maxDiff = None
@@ -28,30 +40,21 @@ class TestGetHoldings(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(request.method, "GET")
             self.assertEqual(
                 request.url.path,
-                f"/custody-accounts/{mock_custody_account_id}/investors"
+                f"/holdings"
             )
 
             return httpx.Response(
                 status_code=200,
-                json={"investors": [
-                        {
-                            "investorId": mock_investor_id,
-                            "name": mock_investor_name
-                        }
-                    ]
-                },
+                json={
+                        "investorId": mock_investor_id,
+                        "isin": mock_isin,
+                        "quantity": mock_quantity,
+                        "asOfDate": mock_as_of_date.isoformat()
+                    },
                 request=request
             )
         
         transport = httpx.MockTransport(mock_handler)
-
-        ballot = Ballot(
-            meetingId=mock_meeting_id,
-            custodyAccountId=mock_custody_account_id,
-            isin=mock_isin,
-            submissionDeadline=mock_submission_deadline,
-            sharesInIssue=mock_shares_in_issue
-        )
 
         async with httpx.AsyncClient(
             base_url=mock_base_url,
@@ -60,18 +63,19 @@ class TestGetHoldings(unittest.IsolatedAsyncioTestCase):
             },
             transport=transport
         ) as client:
-            result = await get_investors(
+            result = await get_holdings(
                 client=client,
-                base_url=mock_base_url,
+                investor_id=investor_id,
                 ballot=ballot,
-                api_key=mock_api_key
+                as_of_date=mock_as_of_date,
+                api_semaphore=api_semaphore
             )
 
-        self.assertIsInstance(result, list)
-        self.assertTrue(all(isinstance(item, Investor) for item in result))
-        for investor in result:
-            self.assertEqual(investor.investor_id, mock_investor_id)
-            self.assertEqual(investor.name, mock_investor_name)
+        self.assertIsInstance(result, Holding)
+        self.assertEqual(result.investor_id, mock_investor_id)
+        self.assertEqual(result.isin, mock_isin)
+        self.assertEqual(result.quantity, mock_quantity)
+        self.assertEqual(result.as_of_date, mock_as_of_date)
 
     async def test_get_holdings_error(self):
         
@@ -80,7 +84,7 @@ class TestGetHoldings(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(request.method, "GET")
             self.assertEqual(
                 request.url.path,
-                f"/custody-accounts/{mock_custody_account_id}/investors"
+                f"/holdings"
             )
 
             return httpx.Response(
@@ -94,14 +98,6 @@ class TestGetHoldings(unittest.IsolatedAsyncioTestCase):
         
         transport = httpx.MockTransport(mock_handler)
 
-        ballot = Ballot(
-            meetingId=mock_meeting_id,
-            custodyAccountId=mock_custody_account_id,
-            isin=mock_isin,
-            submissionDeadline=mock_submission_deadline,
-            sharesInIssue=mock_shares_in_issue
-        )
-
         async with httpx.AsyncClient(
             base_url=mock_base_url,
             headers={
@@ -109,11 +105,12 @@ class TestGetHoldings(unittest.IsolatedAsyncioTestCase):
             },
             transport=transport
         ) as client:
-            result = await get_investors(
+            result = await get_holdings(
                 client=client,
-                base_url=mock_base_url,
+                investor_id=investor_id,
                 ballot=ballot,
-                api_key=mock_api_key
+                as_of_date=mock_as_of_date,
+                api_semaphore=api_semaphore
             )
 
         self.assertIsInstance(result, Error)
@@ -127,27 +124,21 @@ class TestGetHoldings(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(request.method, "GET")
             self.assertEqual(
                 request.url.path,
-                f"/custody-accounts/{mock_custody_account_id}/investors"
+                f"/holdings"
             )
 
             return httpx.Response(
                 status_code=200,
-                json={
+                json=[{
                         "investorId": mock_investor_id,
-                        "name": mock_investor_name
-                    },
+                        "isin": mock_isin,
+                        "quantity": mock_quantity,
+                        "asOfDate": mock_as_of_date.isoformat()
+                    }],
                 request=request
             )
         
         transport = httpx.MockTransport(mock_handler)
-
-        ballot = Ballot(
-            meetingId=mock_meeting_id,
-            custodyAccountId=mock_custody_account_id,
-            isin=mock_isin,
-            submissionDeadline=mock_submission_deadline,
-            sharesInIssue=mock_shares_in_issue
-        )
 
         async with httpx.AsyncClient(
             base_url=mock_base_url,
@@ -156,11 +147,12 @@ class TestGetHoldings(unittest.IsolatedAsyncioTestCase):
             },
             transport=transport
         ) as client:
-            result = await get_investors(
+            result = await get_holdings(
                 client=client,
-                base_url=mock_base_url,
+                investor_id=investor_id,
                 ballot=ballot,
-                api_key=mock_api_key
+                as_of_date=mock_as_of_date,
+                api_semaphore=api_semaphore
             )
 
         self.assertIsInstance(result, Error)

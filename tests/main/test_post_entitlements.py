@@ -1,6 +1,8 @@
 import asyncio
-from main.get_investors import get_investors
-from helpers.types import Ballot, Investor, Error
+from datetime import date, datetime
+import json
+from main.post_entitlements import post_entitlements
+from helpers.types import Ballot, Holding, Investor, Error, EntitlementRequest, Entitlement
 import unittest
 import httpx
 
@@ -14,7 +16,7 @@ mock_isin = "GB00TEST0001"
 mock_submission_deadline = "2026-02-15"
 mock_shares_in_issue = 1000
 mock_invalid_request_error_code = "400"
-mock_invalid_request_error_message = "Invalid custody account ID format"
+mock_invalid_request_error_message = "Invalid entitlement request"
 mock_malformed_error_code = "500"
 mock_malformed_error_message = "Invalid success returned"
 api_semaphore = asyncio.Semaphore(1)
@@ -25,31 +27,44 @@ ballot = Ballot(
             submissionDeadline=mock_submission_deadline,
             sharesInIssue=mock_shares_in_issue
         )
+investor_id="mock_investor_id"
+mock_created_at=datetime(2026,2,15,0,0,0)
+mock_quantity=1500
+mock_entitlement_id="mock_entitlement_id"
+entitlement_request = EntitlementRequest(
+            meetingId=mock_meeting_id,
+            investorId=mock_investor_id,
+            isin=mock_isin,
+            quantity=mock_quantity
+        )
 
-class TestGetInvestors(unittest.IsolatedAsyncioTestCase):
+class TestPostEntitlements(unittest.IsolatedAsyncioTestCase):
     maxDiff = None
    
 
-    async def test_get_investor_happy(self):
+    async def test_post_entitlements_happy(self):
+        request_seen: list[httpx.Request] = []
         
         def mock_handler(request: httpx.Request) -> httpx.Response:
-
             #Making sure request is all good
-            self.assertEqual(request.method, "GET")
+            self.assertEqual(request.method, "POST")
             self.assertEqual(
                 request.url.path,
-                f"/custody-accounts/{mock_custody_account_id}/investors"
+                f"/entitlements"
             )
 
+            request_seen.append(request)
+
             return httpx.Response(
-                status_code=200,
-                json={"investors": [
-                        {
-                            "investorId": mock_investor_id,
-                            "name": mock_investor_name
-                        }
-                    ]
-                },
+                status_code=201,
+                json={
+                        "entitlementId": mock_entitlement_id,
+                        "meetingId": mock_meeting_id,
+                        "investorId": mock_investor_id,
+                        "isin": mock_isin,
+                        "quantity": mock_quantity,
+                        "createdAt": mock_created_at.isoformat()
+                    },
                 request=request
             )
         
@@ -62,28 +77,43 @@ class TestGetInvestors(unittest.IsolatedAsyncioTestCase):
             },
             transport=transport
         ) as client:
-            result = await get_investors(
+            result = await post_entitlements(
                 client=client,
-                ballot=ballot,
+                entitelement_request=entitlement_request,    
                 api_semaphore=api_semaphore
             )
 
-        self.assertIsInstance(result, list)
-        self.assertTrue(all(isinstance(item, Investor) for item in result))
-        for investor in result:
-            self.assertEqual(investor.investor_id, mock_investor_id)
-            self.assertEqual(investor.name, mock_investor_name)
+        self.assertIsInstance(result, Entitlement)
+        self.assertEqual(result.entitlement_id, mock_entitlement_id)
+        self.assertEqual(result.meeting_id, mock_meeting_id)
+        self.assertEqual(result.investor_id, mock_investor_id)
+        self.assertEqual(result.isin, mock_isin)
+        self.assertEqual(result.quantity, mock_quantity)
+        self.assertEqual(result.created_at, mock_created_at)
 
-    async def test_get_investor_error(self):
-        
+        sent_requests = request_seen[0]
+
+        sent_json = json.loads(sent_requests.content)
+
+        #Checking to see if entitelement_request.model_dump(by_alias=True, mode="json") works properly
+        self.assertEqual(
+            sent_json,
+            {
+                "meetingId": mock_meeting_id,
+                "investorId": mock_investor_id,
+                "isin": mock_isin,
+                "quantity": mock_quantity
+            }
+        )
+
+    async def test_post_entitlements_error(self):
         
         def mock_handler(request: httpx.Request) -> httpx.Response:
-
             #Making sure request is all good
-            self.assertEqual(request.method, "GET")
+            self.assertEqual(request.method, "POST")
             self.assertEqual(
                 request.url.path,
-                f"/custody-accounts/{mock_custody_account_id}/investors"
+                f"/entitlements"
             )
 
             return httpx.Response(
@@ -104,9 +134,9 @@ class TestGetInvestors(unittest.IsolatedAsyncioTestCase):
             },
             transport=transport
         ) as client:
-            result = await get_investors(
+            result = await post_entitlements(
                 client=client,
-                ballot=ballot,
+                entitelement_request=entitlement_request,    
                 api_semaphore=api_semaphore
             )
 
@@ -114,25 +144,26 @@ class TestGetInvestors(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.code, mock_invalid_request_error_code)
         self.assertEqual(result.message, mock_invalid_request_error_message)
 
-    async def test_get_investor_malformed_response(self):
-        
+    async def test_post_entitlements_malformed_response(self):
         
         def mock_handler(request: httpx.Request) -> httpx.Response:
-
             #Making sure request is all good
-            self.assertEqual(request.method, "GET")
+            self.assertEqual(request.method, "POST")
             self.assertEqual(
                 request.url.path,
-                f"/custody-accounts/{mock_custody_account_id}/investors"
+                f"/entitlements"
             )
 
             return httpx.Response(
-                status_code=200,
-                #JSON is malformed
-                json={
+                status_code=201,
+                json=[{
+                        "entitlementId": mock_entitlement_id,
+                        "meetingId": mock_meeting_id,
                         "investorId": mock_investor_id,
-                        "name": mock_investor_name
-                    },
+                        "isin": mock_isin,
+                        "quantity": mock_quantity,
+                        "createdAt": mock_created_at.isoformat()
+                    }],
                 request=request
             )
         
@@ -145,9 +176,9 @@ class TestGetInvestors(unittest.IsolatedAsyncioTestCase):
             },
             transport=transport
         ) as client:
-            result = await get_investors(
+            result = await post_entitlements(
                 client=client,
-                ballot=ballot,
+                entitelement_request=entitlement_request,    
                 api_semaphore=api_semaphore
             )
 

@@ -222,7 +222,7 @@ class InvestorList(BaseModel):
         str_strip_whitespace=True,
     )
 
-    Investors: list[Investor] = Field(
+    investors: list[Investor] = Field(
         alias="investors",
         min_length=1,
         strict=True

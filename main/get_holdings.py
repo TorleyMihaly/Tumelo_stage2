@@ -7,11 +7,9 @@ from datetime import date, datetime
 
 async def get_holdings(
         client: httpx.AsyncClient,
-        base_url: str,
         ballot: Ballot,
         investor_id: str,
         as_of_date: date,
-        api_key: str,
         api_semaphore: asyncio.Semaphore
 ) -> Holding | Error:
     async with api_semaphore:

@@ -4,6 +4,7 @@ from main.handle_ballot_loader import handle_ballot_loader
 from main.process_ballot import process_ballot
 import httpx
 import asyncio
+import logging
 
 
 json_file_path = "data/ballot_data.json"
@@ -14,7 +15,11 @@ MAX_CONCURRENT_API_CALLS = 20
 API_BASE_URL = "https://api.tumelo.com"
 as_of_date = datetime.today()
     
-
+def configure_logging() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
 
 async def process_all_ballots(
         ballots: list[Ballot],
@@ -54,6 +59,10 @@ async def process_all_ballots(
     return list(results)
 
 async def main() -> None:
+    configure_logging()
+
+    logger = logging.getLogger(__name__)
+
     ballots = handle_ballot_loader(json_file_path)
 
     if ballots.isinstance(list[InvalidBallot]):
@@ -65,9 +74,9 @@ async def main() -> None:
         ballot_fails = result.ballots_failed
         ballot_successes = result.ballots_succeeded
         for result in ballot_successes:
-            print(f"{result.meeting_id}: submitted, has entitlrent_id: {result.entitlement.entitlement_id}")
+            logger.info("%s: submitted, has entitlement_id: %s", result.meeting_id, result.entitlement.entitlement_id)
         for result in ballot_fails:
-            print(f"{result.meeting_id}: failed, with error: {result.error.code}, {result.error.message}")
+            logger.error("%s: failed, with error:  %s, %s", result.meeting_id, result.error.code, result.error.message)
 
 
 if __name__ == "__main__":

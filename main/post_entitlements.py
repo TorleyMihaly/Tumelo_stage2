@@ -7,9 +7,7 @@ from datetime import date, datetime
 
 async def post_entitlements(
         client: httpx.AsyncClient,
-        base_url: str,
         entitelement_request: EntitlementRequest,
-        api_key: str,
         api_semaphore: asyncio.Semaphore
 ) -> Entitlement | Error:
     async with api_semaphore:

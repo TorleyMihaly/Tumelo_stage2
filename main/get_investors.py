@@ -6,9 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 
 async def get_investors(
         client: httpx.AsyncClient,
-        base_url: str,
         ballot: Ballot,
-        api_key: str,
         api_semaphore: asyncio.Semaphore
 ) -> list[Investor] | Error:
     async with api_semaphore:

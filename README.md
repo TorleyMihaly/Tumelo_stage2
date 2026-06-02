@@ -16,3 +16,5 @@ All API's have same base URL
 
 Run unit tests:
 python -m unittest tests.main.test_load_ballots
+python -m unittest tests.main.test_get_investor
+python -m unittest tests.main.test_post_entitlements
