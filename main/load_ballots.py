@@ -1,7 +1,10 @@
+import logging
 from helpers.types import Ballot, InvalidBallot, BallotLoadResult
 from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 import json
+
+logger = logging.getLogger(__name__)
 
 def load_ballots(path: str) -> BallotLoadResult:
     path = Path(path)
@@ -47,7 +50,10 @@ def load_ballots(path: str) -> BallotLoadResult:
             )
         # Else needed otherwise multiples of valid ballots will be appended
         else:
-            valid_ballots.append(ballot)
+            if ballot in valid_ballots:
+                logger.warning("Duplicate ballot: %s", ballot.meeting_id)
+            else:
+                valid_ballots.append(ballot)
 
     return BallotLoadResult(
         valid=valid_ballots,
