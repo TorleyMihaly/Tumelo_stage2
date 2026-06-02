@@ -1,8 +1,7 @@
 import asyncio
 from datetime import date
-import typing
 import httpx
-from helpers.types import BallotProcessingResult, Ballot, BallotProcessingResultLists, Investor, Error, Holding, EntitlementRequest, Entitlement, InvestorList
+from helpers.types import BallotProcessingResult, Ballot, BallotProcessingResultLists, Error, Holding, EntitlementRequest, Entitlement, InvestorList
 from main.get_holdings import get_holdings
 from main.get_investors import get_investors
 from main.post_entitlements import post_entitlements

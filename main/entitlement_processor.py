@@ -1,5 +1,5 @@
 import datetime
-from helpers.types import Ballot, InvalidBallot, BallotLoadResult, BallotProcessingResult, BallotProcessingResultLists
+from helpers.types import Ballot, InvalidBallot, BallotProcessingResultLists
 from main.handle_ballot_loader import handle_ballot_loader
 from main.process_ballot import process_ballot
 import httpx

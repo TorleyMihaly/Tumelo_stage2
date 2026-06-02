@@ -1,4 +1,4 @@
-from helpers.types import Ballot, InvalidBallot, BallotLoadResult
+from helpers.types import InvalidBallot, BallotLoadResult
 from main.load_ballots import load_ballots
 import logging
 

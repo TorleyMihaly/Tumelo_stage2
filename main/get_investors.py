@@ -1,9 +1,8 @@
 import asyncio
-from dataclasses import dataclass
 import logging
 import httpx
 from helpers.types import Ballot, Investor, Error, InvestorList
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
 

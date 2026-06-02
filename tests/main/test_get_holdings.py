@@ -1,7 +1,7 @@
 import asyncio
 from datetime import date
 from main.get_holdings import get_holdings
-from helpers.types import Ballot, Holding, Investor, Error
+from helpers.types import Ballot, Holding, Error
 import unittest
 import httpx
 

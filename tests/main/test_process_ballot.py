@@ -1,11 +1,10 @@
 import asyncio
 from datetime import date
 from main.process_ballot import process_ballot
-from helpers.types import Ballot, Holding, Investor, Error, InvestorList, EntitlementRequest, Entitlement, BallotProcessingResultLists
+from helpers.types import Ballot, Holding, Investor, Error, InvestorList, Entitlement, BallotProcessingResultLists
 import unittest
 import httpx
-from unittest.mock import AsyncMock, patch
-from types import SimpleNamespace
+from unittest.mock import patch
 
 
 api_semaphore = asyncio.Semaphore(1)

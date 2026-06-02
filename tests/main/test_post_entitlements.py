@@ -1,8 +1,8 @@
 import asyncio
-from datetime import date, datetime
+from datetime import datetime
 import json
 from main.post_entitlements import post_entitlements
-from helpers.types import Ballot, Holding, Investor, Error, EntitlementRequest, Entitlement
+from helpers.types import Ballot, Error, EntitlementRequest, Entitlement
 import unittest
 import httpx
 

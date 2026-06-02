@@ -2,7 +2,6 @@ import unittest
 from main.handle_ballot_loader import handle_ballot_loader
 from helpers.types import Ballot, BallotLoadResult, InvalidBallot
 from unittest.mock import patch
-from pydantic import ValidationError
 
 class TestLoadBallots(unittest.TestCase):
     maxDiff = None

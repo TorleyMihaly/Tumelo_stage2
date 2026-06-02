@@ -1,6 +1,6 @@
 import unittest
 from main.load_ballots import load_ballots
-from helpers.types import Ballot, BallotLoadResult
+from helpers.types import Ballot
 
 class TestLoadBallots(unittest.TestCase):
     maxDiff = None

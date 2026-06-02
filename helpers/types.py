@@ -1,8 +1,7 @@
 from datetime import date, datetime
-from pathlib import Path
 from dataclasses import dataclass
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 class Ballot(BaseModel):
     model_config = ConfigDict(

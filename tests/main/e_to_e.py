@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 import tempfile
 import unittest
-from helpers.types import Ballot, Holding, Investor, Error, EntitlementRequest, Entitlement, BallotLoadResult
+from helpers.types import Ballot, Error, BallotLoadResult
 import httpx
 from main.entitlement_processor import process_all_ballots_with_client
 from main.handle_ballot_loader import handle_ballot_loader
